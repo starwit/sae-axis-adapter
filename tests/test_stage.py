@@ -1,11 +1,17 @@
+import threading
+from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch
 
 import pytest
 from visionapi.common_pb2 import MessageType
 from visionapi.sae_pb2 import SaeMessage
 
-from axisadapter.config import AxisAdapterConfig, RedisConfig
+from axisadapter.config import (AxisAdapterConfig, ClassMapping, MqttConfig,
+                                RedisConfig)
 from axisadapter.stage import run_stage
+
+SAMPLE_PAYLOAD = (Path(__file__).parent / 'data' / 'single.jsonl').read_bytes()
 
 
 @pytest.fixture(autouse=True)
@@ -17,13 +23,12 @@ def disable_prometheus():
 @pytest.fixture
 def set_config():
     with patch('axisadapter.stage.AxisAdapterConfig') as mock_config:
-        def _make_mock_config(stream_id: str, input_stream_prefix: str):
+        def _make_mock_config(stream_id: str):
             mock_config.return_value = AxisAdapterConfig(
                 log_level='WARNING',
-                redis=RedisConfig(
-                    stream_id=stream_id,
-                    input_stream_prefix=input_stream_prefix
-                )
+                redis=RedisConfig(stream_id=stream_id),
+                mqtt=MqttConfig(topic='axis/detections'),
+                class_mapping={'Car': ClassMapping(id=2, name='car')},
             )
         yield _make_mock_config
 
@@ -33,30 +38,42 @@ def redis_publisher_mock():
         yield mock_publisher.return_value.__enter__.return_value
 
 @pytest.fixture
-def inject_consumer_messages():
-    with patch('axisadapter.stage.ValkeyConsumer') as mock_consumer:
-        def _inject_messages(messages):
-            mock_consumer.return_value.__enter__.return_value.return_value.__iter__.return_value = iter(messages)
-        yield _inject_messages
+def mqtt_client_mock():
+    with patch('axisadapter.stage.mqtt.Client') as mock_client:
+        yield mock_client.return_value
 
-def test_example(set_config, redis_publisher_mock, inject_consumer_messages):
-    set_config(stream_id='test_stream', input_stream_prefix='test_prefix')
-    
-    inject_consumer_messages([
-        ('test_prefix:test_stream', _make_sae_msg_bytes(1)),
-        ('test_prefix:test_stream', _make_sae_msg_bytes(2)),
-    ])
-    
-    # Run the stage (this will process the injected messages)
-    run_stage()
-    
-    # Verify that messages were published
-    assert redis_publisher_mock.call_count == 2
-    assert redis_publisher_mock.call_args_list[0].args == ('axisadapter:test_stream', _make_sae_msg_bytes(1))
-    assert redis_publisher_mock.call_args_list[1].args == ('axisadapter:test_stream', _make_sae_msg_bytes(2))
+def test_example(set_config, redis_publisher_mock, mqtt_client_mock):
+    set_config(stream_id='test_stream')
 
-def _make_sae_msg_bytes(timestamp: int) -> bytes:
+    # Deliver a message via the registered on_message callback once the loop starts,
+    # then release the stop event so run_stage() returns.
+    stop_event = threading.Event()
+
+    def deliver_messages():
+        msg = SimpleNamespace(payload=SAMPLE_PAYLOAD, topic='axis/detections')
+        mqtt_client_mock.on_message(mqtt_client_mock, None, msg)
+        stop_event.set()
+
+    mqtt_client_mock.loop_start.side_effect = deliver_messages
+
+    with patch('axisadapter.stage.threading.Event', return_value=stop_event):
+        run_stage()
+
+    # The adapter subscribed to the configured topic and connected/disconnected cleanly
+    mqtt_client_mock.connect.assert_called_once()
+    mqtt_client_mock.loop_stop.assert_called_once()
+    mqtt_client_mock.disconnect.assert_called_once()
+
+    # Exactly one SAE message was published to the configured output stream
+    assert redis_publisher_mock.call_count == 1
+    stream_key, proto_data = redis_publisher_mock.call_args_list[0].args
+    assert stream_key == 'axisadapter:test_stream'
+
     sae_msg = SaeMessage()
-    sae_msg.frame.timestamp_utc_ms = timestamp
-    sae_msg.type = MessageType.SAE
-    return sae_msg.SerializeToString()
+    sae_msg.ParseFromString(proto_data)
+    assert sae_msg.type == MessageType.SAE
+    assert sae_msg.frame.source_id == 'test_stream'
+    # 2 of the 4 sample detections are classified (both cars)
+    assert len(sae_msg.detections) == 2
+    assert all(d.class_id == 2 for d in sae_msg.detections)
+    assert sae_msg.model_metadata.class_names[2] == 'car'

@@ -3,6 +3,39 @@ redis:
   host: redis
   port: 6379
   stream_id: stream1
-  input_stream_prefix: objecttracker
   output_stream_prefix: axisadapter
+mqtt:
+  host: mqtt-broker
+  port: 1883
+  topic: axis/detections
+  qos: 0
+  # client_id: axis-adapter
+  # username: user
+  # password: secret
+  # tls:
+  #   enabled: true
+  #   ca_certs: /path/to/ca.crt
+  #   # certfile: /path/to/client.crt
+  #   # keyfile: /path/to/client.key
+  #   insecure: false
+# Maps AXIS class.type values onto SAE (class_id, name) tuples.
+class_mapping:
+  Car:
+    id: 2
+    name: car
+  Human:
+    id: 1
+    name: person
+  Bus:
+    id: 5
+    name: bus
+  Truck:
+    id: 7
+    name: truck
+  Bike:
+    id: 3
+    name: bicycle
+  Motorcycle:
+    id: 4
+    name: motorcycle
 prometheus_port: 8000

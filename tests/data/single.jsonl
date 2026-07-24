@@ -1,0 +1,110 @@
+{
+    "channel_id": 3,
+    "detections": [
+        {
+            "bounding_box": {
+                "bottom": 0.2271,
+                "left": 0.4412,
+                "right": 0.4509,
+                "top": 0.2171
+            },
+            "object_track_id": "a82de742-8e79-4096-ad90-838a8c8b4c9f"
+        },
+        {
+            "bounding_box": {
+                "bottom": 0.5045,
+                "left": 0.5128,
+                "right": 0.6185,
+                "top": 0.4274
+            },
+            "class": {
+                "colors": [
+                    {
+                        "name": "white",
+                        "score": 0.83
+                    },
+                    {
+                        "name": "gray",
+                        "score": 0.12
+                    },
+                    {
+                        "name": "black",
+                        "score": 0.05
+                    },
+                    {
+                        "name": "red",
+                        "score": 0.05
+                    },
+                    {
+                        "name": "blue",
+                        "score": 0.03
+                    },
+                    {
+                        "name": "yellow",
+                        "score": 0.03
+                    },
+                    {
+                        "name": "green",
+                        "score": 0.02
+                    }
+                ],
+                "score": 0.85,
+                "type": "Car"
+            },
+            "object_track_id": "a48ac5f4-31df-42db-af35-0749555dfcf1"
+        },
+        {
+            "bounding_box": {
+                "bottom": 0.4166,
+                "left": 0.1459,
+                "right": 0.1985,
+                "top": 0.359
+            },
+            "class": {
+                "colors": [
+                    {
+                        "name": "gray",
+                        "score": 0.78
+                    },
+                    {
+                        "name": "white",
+                        "score": 0.19
+                    },
+                    {
+                        "name": "black",
+                        "score": 0.11
+                    },
+                    {
+                        "name": "green",
+                        "score": 0.06
+                    },
+                    {
+                        "name": "blue",
+                        "score": 0.06
+                    },
+                    {
+                        "name": "yellow",
+                        "score": 0.02
+                    },
+                    {
+                        "name": "red",
+                        "score": 0.02
+                    }
+                ],
+                "score": 0.87,
+                "type": "Car"
+            },
+            "object_track_id": "5466bfc5-f5dd-4cf5-bf02-3532025bd53d"
+        },
+        {
+            "bounding_box": {
+                "bottom": 0.3846,
+                "left": 0.0134,
+                "right": 0.0635,
+                "top": 0.3483
+            },
+            "object_track_id": "3b3bf0c7-2c2b-4e14-8ebc-55a1e910ca5c"
+        }
+    ],
+    "timestamp": "2026-07-24T13:18:50.390923Z"
+}
