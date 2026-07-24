@@ -1,9 +1,9 @@
 import pytest
 
-def test_mystage_import():
+def test_axisadapter_import():
     try:
-        from mystage.mystage import MyStage
+        from axisadapter.axisadapter import AxisAdapter
     except ImportError as e:
-        pytest.fail(f"Failed to import MyStage: {e}")
+        pytest.fail(f"Failed to import AxisAdapter: {e}")
 
-    assert MyStage is not None, "MyStage should be imported successfully"
+    assert AxisAdapter is not None, "AxisAdapter should be imported successfully"
