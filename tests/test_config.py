@@ -1,8 +1,8 @@
 import pytest
 from pydantic import ValidationError
 
-from axisadapter.config import (AxisAdapterConfig, ClassMapping, MqttConfig,
-                                RedisConfig)
+from axisadapter.config import (AxisAdapterConfig, ClassMapping,
+                                FrameShapeConfig, MqttConfig, RedisConfig)
 
 
 def test_incomplete_config():
@@ -35,6 +35,7 @@ def test_complete_config():
             username="user",
             password="secret"
         ),
+        frame_shape=FrameShapeConfig(width=1920, height=1080),
         class_mapping={
             "Car": ClassMapping(id=2, name="car"),
         },

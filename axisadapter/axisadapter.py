@@ -48,6 +48,9 @@ class AxisAdapter:
         sae_msg = SaeMessage()
         sae_msg.type = MessageType.SAE
         sae_msg.frame.source_id = self.config.redis.stream_id
+        sae_msg.frame.shape.height = self.config.frame_shape.height
+        sae_msg.frame.shape.width = self.config.frame_shape.width
+        sae_msg.frame.shape.channels = self.config.frame_shape.channels
 
         timestamp = axis_msg.get('timestamp')
         timestamp_ms = self._parse_timestamp_ms(timestamp)

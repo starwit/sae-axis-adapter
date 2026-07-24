@@ -7,8 +7,8 @@ import pytest
 from visionapi.common_pb2 import MessageType
 from visionapi.sae_pb2 import SaeMessage
 
-from axisadapter.config import (AxisAdapterConfig, ClassMapping, MqttConfig,
-                                RedisConfig)
+from axisadapter.config import (AxisAdapterConfig, ClassMapping,
+                                FrameShapeConfig, MqttConfig, RedisConfig)
 from axisadapter.stage import run_stage
 
 SAMPLE_PAYLOAD = (Path(__file__).parent / 'data' / 'single.jsonl').read_bytes()
@@ -28,6 +28,7 @@ def set_config():
                 log_level='WARNING',
                 redis=RedisConfig(stream_id=stream_id),
                 mqtt=MqttConfig(topic='axis/detections'),
+                frame_shape=FrameShapeConfig(width=1920, height=1080),
                 class_mapping={'Car': ClassMapping(id=2, name='car')},
             )
         yield _make_mock_config

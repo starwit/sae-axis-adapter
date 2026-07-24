@@ -6,8 +6,8 @@ from visionapi.common_pb2 import MessageType
 from visionapi.sae_pb2 import SaeMessage
 
 from axisadapter.axisadapter import AxisAdapter
-from axisadapter.config import (AxisAdapterConfig, ClassMapping, MqttConfig,
-                                RedisConfig)
+from axisadapter.config import (AxisAdapterConfig, ClassMapping,
+                                FrameShapeConfig, MqttConfig, RedisConfig)
 
 SAMPLE_PAYLOAD = (Path(__file__).parent / 'data' / 'single.jsonl').read_bytes()
 
@@ -18,6 +18,7 @@ def adapter():
         log_level='WARNING',
         redis=RedisConfig(stream_id='cam1'),
         mqtt=MqttConfig(topic='axis/detections'),
+        frame_shape=FrameShapeConfig(width=1920, height=1080),
         class_mapping={'Car': ClassMapping(id=2, name='car')},
     )
     return AxisAdapter(config)
@@ -34,6 +35,9 @@ def test_frame_metadata(adapter):
     assert sae_msg.type == MessageType.SAE
     assert sae_msg.frame.source_id == 'cam1'
     assert sae_msg.frame.timestamp_utc_ms == 1784899130390
+    assert sae_msg.frame.shape.width == 1920
+    assert sae_msg.frame.shape.height == 1080
+    assert sae_msg.frame.shape.channels == 3
 
 def test_unclassified_detections_are_dropped(adapter):
     # The sample has 4 detections, only 2 carry a class.
@@ -62,6 +66,7 @@ def test_unmapped_type_is_dropped():
         log_level='WARNING',
         redis=RedisConfig(stream_id='cam1'),
         mqtt=MqttConfig(topic='axis/detections'),
+        frame_shape=FrameShapeConfig(width=1920, height=1080),
         class_mapping={},  # 'Car' not mapped
     )
     sae_msg = _parse(AxisAdapter(config), SAMPLE_PAYLOAD)

@@ -18,6 +18,12 @@ mqtt:
   #   # certfile: /path/to/client.crt
   #   # keyfile: /path/to/client.key
   #   insecure: false
+# Resolution of the AXIS camera stream. AXIS bounding boxes are normalized (0..1),
+# so downstream consumers need the frame shape to reconstruct pixel coordinates.
+frame_shape:
+  width: 1920
+  height: 1080
+  channels: 3
 # Maps AXIS class.type values onto SAE (class_id, name) tuples.
 class_mapping:
   Car:

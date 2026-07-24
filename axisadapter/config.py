@@ -36,10 +36,16 @@ class ClassMapping(BaseModel):
     id: Annotated[int, Field(ge=0)]
     name: str
 
+class FrameShapeConfig(BaseModel):
+    height: Annotated[int, Field(ge=1)]
+    width: Annotated[int, Field(ge=1)]
+    channels: Annotated[int, Field(ge=1)] = 3
+
 class AxisAdapterConfig(BaseSettings):
     log_level: LogLevel = LogLevel.WARNING
     redis: RedisConfig
     mqtt: MqttConfig
+    frame_shape: FrameShapeConfig
     class_mapping: Dict[str, ClassMapping] = {}
     prometheus_port: Annotated[int, Field(ge=1024, le=65536)] = 8000
 
